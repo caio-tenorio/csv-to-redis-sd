@@ -1,5 +1,6 @@
 import csv, redis, json
 import sys
+import utm
 
 REDIS_HOST = 'localhost'
 ORGAOS = "orgaos-II"
@@ -24,6 +25,7 @@ def store_data(conn, data, key_index, db_key):
         field = field.replace('"','')
         header_clean.append(field)
     header_clean.insert(0, "Id")
+    data.pop(0)
 
     for line in data:
         line_fix = line
@@ -31,6 +33,16 @@ def store_data(conn, data, key_index, db_key):
         key = build_key(key_index, db_key, line_fix)
         count = 0
         dict_to_store["key"] = key[1:]
+        cord_x = int(line_fix[7])
+        cord_y = int(line_fix[8])
+        if cord_x != 0 and cord_y !=0:
+            utm_value = utm.to_latlon(cord_x, cord_y, 25, 'L')
+            line_fix.append(utm_value[0])
+            line_fix.append(utm_value[1])
+        else:
+            utm_value = None
+            line_fix.append(utm_value)
+            line_fix.append(utm_value)
         # for attribute in line:
         #     if attribute != "2018.1" and attribute != "2018.2":
         #         dict_to_store[header_clean[count]] = attribute.replace(".", "")
