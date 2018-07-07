@@ -25,16 +25,19 @@ def store_data(conn, data, key_index, db_key):
         field = field.replace('"','')
         header_clean.append(field)
     header_clean.insert(0, "Id")
+    header_clean.append("x")
+    header_clean.append("y")
     data.pop(0)
 
     for line in data:
         line_fix = line
         line_fix.insert(0, str(id_count))
-        key = build_key(key_index, db_key, line_fix)
+        #key = build_key(key_index, db_key, line_fix)
         count = 0
-        dict_to_store["key"] = key[1:]
+        #dict_to_store["key"] = key[1:]
         cord_x = int(line_fix[7])
         cord_y = int(line_fix[8])
+
         if cord_x != 0 and cord_y !=0:
             utm_value = utm.to_latlon(cord_x, cord_y, 25, 'L')
             line_fix.append(utm_value[0])
@@ -43,6 +46,11 @@ def store_data(conn, data, key_index, db_key):
             utm_value = None
             line_fix.append(utm_value)
             line_fix.append(utm_value)
+        
+        count2 = 0
+        for field in line_fix:
+            dict_to_store[str(header_clean[count2])] = str(line_fix[count2])
+            count2 = count2 + 1 
         # for attribute in line:
         #     if attribute != "2018.1" and attribute != "2018.2":
         #         dict_to_store[header_clean[count]] = attribute.replace(".", "")
@@ -50,7 +58,7 @@ def store_data(conn, data, key_index, db_key):
         #         dict_to_store[header_clean[count]] = attribute
             #count = count + 1
         #dict_to_redis_hset(conn, (db_key[1] + str(key)), dict_to_store)
-        conn.setnx(line_fix[0],line_fix)
+        conn.setnx(line_fix[0],dict_to_store)
         id_count = id_count + 1
     return data        
 
