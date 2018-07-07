@@ -18,6 +18,9 @@ r_list = r.keys()
 
 for r_id in r_list:
 	to_json = json.dumps(r.get(r_id))
-	teste = to_json.replace("[","").replace("]","").replace("'",'"')
-	channel.basic_publish(exchange='', routing_key='publisher', body=str(teste))
+	message = to_json.replace("[","").replace("]","").replace("'",'"')
+	message = message[1:]
+	message = message[:-1]
+	print (message)
+	channel.basic_publish(exchange='', routing_key='publisher', body=str(message))
 	time.sleep(5)
