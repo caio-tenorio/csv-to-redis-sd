@@ -57,7 +57,7 @@ def store_data(conn, data, key_index, db_key):
         #     else:
         #         dict_to_store[header_clean[count]] = attribute
             #count = count + 1
-        #dict_to_redis_hset(conn, (db_key[1] + str(key)), dict_to_store)
+        #dict_to_redis_hset(conn, line_fix[0], dict_to_store)
         conn.setnx(line_fix[0],dict_to_store)
         id_count = id_count + 1
     return data        
