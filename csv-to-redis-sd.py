@@ -3,9 +3,6 @@ import sys
 import utm
 
 REDIS_HOST = 'localhost'
-ORGAOS = "orgaos-II"
-SUGESTAO = "sugestao-I"
-TURMAS_COMPONETES = "turmas-componentes-III"
 
 def read_csv_data(csv_file):
     with open(csv_file, encoding='utf-8') as csvf:
@@ -16,7 +13,7 @@ def build_key(key_index, db_key, line):
     key = line[int(key_index)]
     return key 
 
-def store_data(conn, data, key_index, db_key):
+def store_data(conn, data, key_index):
     dict_to_store = {}
     header = data[0]
     header_clean = []
@@ -32,9 +29,7 @@ def store_data(conn, data, key_index, db_key):
     for line in data:
         line_fix = line
         line_fix.insert(0, str(id_count))
-        #key = build_key(key_index, db_key, line_fix)
         count = 0
-        #dict_to_store["key"] = key[1:]
         cord_x = int(line_fix[7])
         cord_y = int(line_fix[8])
 
@@ -51,35 +46,10 @@ def store_data(conn, data, key_index, db_key):
         for field in line_fix:
             dict_to_store[str(header_clean[count2])] = str(line_fix[count2])
             count2 = count2 + 1 
-        # for attribute in line:
-        #     if attribute != "2018.1" and attribute != "2018.2":
-        #         dict_to_store[header_clean[count]] = attribute.replace(".", "")
-        #     else:
-        #         dict_to_store[header_clean[count]] = attribute
-            #count = count + 1
-        #dict_to_redis_hset(conn, line_fix[0], dict_to_store)
+
         conn.setnx(line_fix[0],dict_to_store)
         id_count = id_count + 1
     return data        
-
-def dict_to_redis_hset(r, hkey, dict_to_store):
-    return all([r.hset(hkey, k, v) for k, v in dict_to_store.items()])
-
-def which_db(csv_file):
-    db_key = []
-    if csv_file == ORGAOS:
-        db = "orgaos"
-        namespace = "OrgaoOferta"
-        db_key = [db, namespace]
-    elif csv_file == SUGESTAO:
-        db = "sugestao"
-        namespace = "Sugestao"
-        db_key = [db, namespace]
-    elif csv_file == TURMAS_COMPONETES:
-        db = "turmas-componentes"
-        namespace = "TurmaOferta"
-        db_key = [db, namespace]
-    return db_key
 
 def main():
     args_len = len(sys.argv)
@@ -93,12 +63,11 @@ def main():
             if i != 0 and i != 1:
                 key_index.append(sys.argv[i])
     csv_file = sys.argv[1].split("/")[-1][:-4]
-    db_key = which_db(csv_file)
 
     try:
         data = read_csv_data(sys.argv[1])
         conn = redis.StrictRedis(host=REDIS_HOST)
-        entry_data = (json.dumps(store_data(conn, data, key_index, db_key)))
+        entry_data = (json.dumps(store_data(conn, data, key_index)))
         print ("Dados registrados com sucesso!")
         pass
     except Exception as e:
